@@ -74,4 +74,4 @@ raw_sum[is.na(raw_sum$part1sum), ]$part1sum=raw_sum[is.na(raw_sum$part1sum), ]$T
 #============================================================
 # write the output file
 #============================================================
-write.csv(raw_sum, file="test_output.csv")
+write.csv(raw_sum, file="test_output.csv", row.names=FALSE)
