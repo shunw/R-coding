@@ -150,6 +150,14 @@ apply(mydata, 2, FUN=mean, trim=.2)
 # END ==== APPLE TO MATRIX/ DATAFRAME
 #============================
 
+
+#============================
+# SOLUTION   FOR PROBLEM 1
+# 1. 将学生的各科考试成绩组合为单一的成绩衡量指标
+# 2. 基于相对名次（前20%， 下20%， 等等）给出从A到F的评分
+# 3. 根据学生姓氏和名字的首字母对花名册进行排序
+#============================
+
 roster
 z
 score
@@ -164,3 +172,172 @@ roster$grade[score<y[2] & score>=y[3]]<-"C"
 roster$grade[score<y[3] & score>=y[4]]<-"D"
 roster$grade[score<y[4]]<-"F"
 
+name<-strsplit((roster$sNames), " ")
+name
+lastname<-sapply(name, "[", 2)
+firstname<-sapply(name, "[", 1)
+roster<-cbind(firstname, lastname, roster[, -1])
+roster
+roster<-roster[order(lastname, firstname),]
+
+#============================
+# END --- SOLUTION   FOR PROBLEM 1
+#============================
+
+#============================
+# LOOP --- FOR & WHILE
+#============================
+#SAMPLE
+for (i in 1:10) print("Hello")
+
+#SAMPLE
+i<-10
+while (i>0) {
+          print ("Hello");
+          i=i-1
+}
+#============================
+# END --- FOR & WHILE
+#============================
+
+
+
+#============================
+# IF CONDITION --- IF/ IF-ELSE/ SWITCH
+#============================
+#SAMPLE 1-1
+grade<-"a"
+if (is.character(grade)) 
+  grade<-as.factor(grade)
+class(grade)
+#SAMPLE 1-2
+grade<-"a"
+if (!is.factor(grade)) grade<-as.factor(grade) else print ("Grade already is a factor")
+
+#SAMPLE 2
+# 程序的行为是二元时，或者希望结构的输入和输出均为向量时，请用ifelse
+ifelse (roster$score>.5, print("Passed"), print("Failed"))
+
+
+#============================
+# END---  IF CONDITION --- IF/ IF-ELSE/ SWITCH
+#============================
+
+
+
+#============================
+# MY FUNCTION
+# myfunction <-function(arg1, arg2, ...){
+# statements
+# return(object)
+# }
+
+
+# debug functions
+# warining() --->>> 生成一条错误提示信息
+# message() --->>> 生成一条诊断信息
+# stop() --->>> 停止当前表达式的执行并提示错误信息
+#============================
+# SAMPLE1
+mystats<-function(x, parametric=TRUE, print=FALSE) {
+        if (parametric) {
+                center<-mean(x); spread<-sd(x)
+        } else {
+                center<-median(x); spread<-mad(x)
+        }
+        if (print & parametric) {
+                cat("Mean=", center, "\n", "SD=", spread, "\n")
+        } else if (print & !parametric) {
+                cat("Median=", center, "\n", "MAD=", spread, "\n")
+        }
+        result<-list(center=center, spread=spread)
+        return(result)
+}
+
+set.seed(1234)
+x<-rnorm(500)
+y<-mystats(x)
+y<-mystats(x, print = TRUE)
+
+y$center
+y$spread
+
+
+# SAMPLE 2
+mydate<-function(type="long") {
+        switch(type,
+               long=format(Sys.time(), "%A %B %d %Y"),
+               short=format(Sys.time(),  "%m-%d-%y"),
+               cat (type, "is not a recognized type\n")
+               )
+}
+
+mydate()
+mydate("long")
+mydate("short")
+mydate("abc")
+#============================
+#  END --- MY FUNCTION
+#============================
+
+#============================
+# 转置
+#============================
+cars<-mtcars[1:5, 1:4]
+cars
+t(cars)
+#============================
+# END --- 转置
+#============================
+
+
+#============================
+# 整合
+# aggregate ()
+# by中的变量必须在一个列表中（即使只有一个变量）
+#============================
+options(digits = 3)
+mtcars
+attach(mtcars)
+aggdate<-aggregate(mtcars, by=list(cyl, gear), FUN=mean, na.rm=TRUE)
+aggdate
+detach(mtcars)
+#============================
+# END --- 整合
+#============================
+
+
+#============================
+# RESHAPE
+#============================
+library(reshape2)
+
+ID<-c(1, 1, 2, 2)
+Time<-c(1, 2, 1, 2)
+X1<-c(5,3, 6, 2)
+X2<-c(6, 5, 1, 4)
+mydata<-data.frame(ID, Time, X1, X2)
+mydata
+
+
+# 融合
+# 注意必须指定可以唯一确定每个测量所需的变量 --->>> 这里是ID和Time
+md<-melt(mydata, id=c("ID", "Time"))
+md
+
+#重铸
+# newdata<-cast(md, formula, FUN)
+# formula描述了想要的最后的结果； FUN是（可选的）数据整合函数
+#samples with FUN
+dcast(md, ID~variable, mean)
+dcast(md, ID~Time, mean)
+dcast(md, Time~variable, mean)
+
+#samples wo FUN
+dcast(md, ID+Time~variable)
+dcast(md, ID+variable ~ Time)
+dcast(md, ID~variable+Time)
+
+#============================
+# END --- RESHAPE
+#============================
