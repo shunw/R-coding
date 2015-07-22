@@ -1,3 +1,5 @@
+#THIS CHAPTER IS FOR THE CHARTS
+
 install.packages("vcd")
 library(vcd)
 head(Arthritis)
@@ -157,4 +159,100 @@ legend(locator(1), levels(cyl.f), fill=colfill)
 detach(mtcars)
 #============================
 # END --- DENSITY
+#============================
+
+
+
+#============================
+# BOXPLOT
+#============================
+#sample for one variable
+boxplot(mtcars$mpg, main="Box Plot", ylab="Miles per Gallon")
+
+#sample for compare variables
+# boxplot(formula, data=dataframe)
+boxplot(mpg~cyl, data=mtcars, 
+        main="Car Mileage Data",
+        xlab="Number of Cylinders",
+        ylab="Miles Per Gallon",
+        horizontal=TRUE)
+
+boxplot(mpg~cyl*gear, data=mtcars, 
+        main="Car Mileage Data",
+        xlab="Number of Cylinders",
+        ylab="Miles Per Gallon")
+
+#sample --->>> notch=TRUE
+boxplot(mpg~cyl, data=mtcars, 
+        notch=TRUE,
+        varwidth=TRUE,
+        col="red", 
+        main="Car Mileage Data",
+        xlab="Number of Cylinders",
+        ylab="Miles Per Gallon")
+
+#sample --->>> with two factors
+mtcars$cyl.f<-factor(mtcars$cyl,
+                     levels=c(4, 6, 8),
+                     labels=c("4", "6", "8"))
+
+mtcars$am.f<-factor(mtcars$am, 
+                    levels=c(0, 1), 
+                    labels=c("auto", "standard"))
+
+boxplot(mpg~am.f*cyl.f,
+        data=mtcars,
+        varwidth=TRUE,
+        col=c("gold", "darkgreen"),
+        main="MPG Distribution by Auto Type",
+        xlab="Auto Type")
+#============================
+# END --- BOXPLOT
+#============================
+
+#============================
+# VIOPLOT
+#============================
+library(vioplot)
+x1<-mtcars$mpg[mtcars$cyl==4]
+x2<-mtcars$mpg[mtcars$cyl==6]
+x3<-mtcars$mpg[mtcars$cyl==8]
+
+vioplot(x1, x2, x3,
+        names=c("4 cyl", "6 cyl", "8 cyl"),
+        col="gold")
+
+
+#============================
+# END --- VIOPLOT
+#============================
+
+
+#============================
+# DOTCHART
+#============================
+#sample1
+dotchart(mtcars$mpg, labels=row.names(mtcars), cex=.7, 
+         main="Gas Mileage for Car Models", 
+         xlab="Miles Per Gallon")
+
+#sample2 --->>> 分组 排序 着色
+x<-mtcars[order(mtcars$mpg),]
+x$cyl<-factor(x$cyl)
+x$color[x$cyl==4]<-"red"
+x$color[x$cyl==6]<-"blue"
+x$color[x$cyl==8]<-"darkgreen"
+
+dotchart(x$mpg,
+         labels=row.names(x),
+         cex=.7,
+         groups = x$cyl,
+         gcolor="black",
+         color=x$color,
+         pch=19,
+         main="Gas Mileage for Car Model\ngrouped by cylinder",
+         xlab="Miles Per Gallon")
+
+#============================
+# END---DOTCHART
 #============================
