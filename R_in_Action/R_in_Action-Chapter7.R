@@ -1,5 +1,6 @@
 #基本统计分析
 #7.2.3-7.3.3 skip
+#skipped 7.5
 
 vars<-c("mpg", "hp", "wt")
 head(mtcars[vars])
@@ -171,6 +172,8 @@ sapply(UScrime[c("U1", "U2")], function(x)(c(mean=mean(x), sd=sd(x))))
 with(UScrime, t.test(U1, U2, paired = TRUE))
 
 # -------------------多于两组的情况------------------------
+# 如果能够假设数据是从正态总体中独立抽样而得的，可以使用方差分析
+# 如果数据无法满足t检验或ANOVA 的参数假设，可以转而使用非参数方法， 7.5
 #===========================
 # ANOVA 方差分析
 #===========================
@@ -323,8 +326,91 @@ interaction2wt(len~supp*dose)
 #============================
 # -----------重复测量方差分析--------------
 #============================
+wlbl<-subset(CO2, Treatment=="chilled")
+table(CO2$uptake)
+fit<-aov(uptake~conc*Type+Error(Plant/conc), wlbl)
+# conc 二氧化碳浓度 是组内因子；Type是组间因子。
+summary(fit)
 
+par(las=2)
+par(mar=c(10, 4, 4, 2))
+with(wlbl, interaction.plot(conc, Type, uptake,
+                            type="b", col=c("red", "blue"), pch=c(16, 18), 
+                            main="Interaction Plot for Plant Type and Concentration"))
 
+boxplot(uptake~Type*conc, data=wlbl, col=(c("gold", "green")), 
+        main="Chilled _quebec and Mississippi Plants", 
+        ylab="Carbon dioxide uptake rate (umol/m^2 sec)")
+
+#============================
+# -----------多元方差分析--------------
+#============================
+library(MASS)
+attach(UScereal)
+y<-cbind(calories, fat, sugars)
+aggregate(y, by=list(shelf), FUN=mean)
+cov(y)
+fit<-manova(y~shelf) #对组间差异进行多元检验；F值显著，说明三个组的营养成分测量值不同
+summary(fit)
+summary.aov(fit) # 多元检验是显著的，因此可以使用summary.aov()函数对每一个变量做单因素方差分析。
+# --------------------上述结果可以看出，三组中每种营养成分的测量值都是不同的。
+
+# -------------评估检验的假设条件-------------
+# 单因素多元方差分析有两个前提假设。一个是多元正态性；一个是方差－协方差矩阵同质性
+# 第一个假设即指因变量组合成的向量服从一个多元正态分布。可以用Q-Q图来检验该假设条件
+
+#检验多元正态性
+center<-colMeans(y)
+n<-nrow(y)
+p<-ncol(y)
+cov<-cov(y)
+cov
+y
+d<-mahalanobis(y, center, cov)
+coord<-qqplot(qchisq(ppoints(n), df=p), 
+              d, main="Q-Q Plot Assessing Multivariate Normality", 
+              ylab="Mahalanobis D2")
+abline(a=0, b=1)
+identify(coord$x, coord$y, labels=row.names(UScereal))
+
+# 方差－协方差矩阵同质性即指各组的协方差矩阵相同，通常可用Box's M检验来评估该假设。
+# 由于R中没有Box's M函数，可以通过网络搜索找到合适的代码。
+# 另外该检验对正态性假设很敏感，会导致在大部分案例中直接拒绝同质性假设
+
+# 检验多元离群点
+library(mvoutlier)
+outliers<-aq.plot(y)
+outliers
+
+#============================
+# -----------稳健多元方差分析--------------
+#============================
+# 如果多元正态性或者方差－协方差均值假设都不满足。
+# 或者担心多元离群点，那么可以考虑用稳健manova检验
+library(rrcov)
+Wilks.test(y, shelf, method="mcd")
+
+#============================
+# -----------用回归来做ANOVA--------------
+#============================
+# 因为线性模型要求预测变量是数值型，当lm()函数碰到因子时，
+#他会用一系列与因子水平相对应的数值型对照变量来代替因子
+# 如果因子有k个水平，将会创建k-1个对照变量
+library(multcomp)
+levels(cholesterol$trt)
+head(cholesterol)
+fit.aov<-aov(response~trt, data=cholesterol)
+summary(fit.aov)
+
+fit.lm<-lm(response~trt, data=cholesterol)
+summary(fit.lm)
+contrasts(cholesterol$trt)
+#若患者处于drugD条件下，变量drugD等于1， 其他变量2times，4times和drugE都等于0.
+#无需列出第一组的便变量值，因为其他四个变量都为0，这已经说明患者处于1time条件。
+
+#trt2times表示水平1time和2times的一个对照。类似的trt4times是1time和4imes的一个对照
+#通过设定contrasts选项，可以修改lm()中默认的对照方法。
+fit.lm<-lm(response~trt, data=cholesterol, contrasts="contr.helmert")
 #===========================
 # END--- ANOVA
 #===========================
