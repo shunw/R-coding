@@ -20,7 +20,7 @@ testing<-spam[-inTrain, ]
 
 ncol(spam)
 ncol(M)
-
+head(spam[, 58])
 M<-abs(cor(training[, -58]))
 head(M)
 diag(M)<-0

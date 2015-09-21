@@ -1,0 +1,99 @@
+---
+title: "PA_machineLearn"
+author: "wendy"
+date: "July 25, 2015"
+output: html_document
+---
+
+get data
+```{r}
+library(RCurl)
+train_URL<-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+train_line<-getURL(train_URL)
+train_0<-read.csv(textConnection(train_line))
+
+library(caret)
+intrain<-createDataPartition(train_0$classe, p=.7, list=FALSE)
+train<-train_0[intrain,]
+train_t<-train_0[-intrain,]
+class(train)  
+head(train)
+names(train)
+
+test_URL<-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+test_line<-getURL(test_URL)
+test<-read.csv(textConnection(test_line))
+names(test)
+```
+
+build model
+```{r}
+# prcomp(train)
+# 
+# M<-abs(cor(train[,c(8:159)]))
+# diag(M)<-0
+# which(M>.9, arr.ind = T)
+# summary(M)
+# 
+# summary(train)
+# library(caret)
+# train(classe~., method="rpart",data=train)
+# 
+# nums<-sapply(x, is.numeric)
+# train_num<-train[, nums]
+
+#fac<-sapply(x, is.factor)
+train_fac<-train[, sapply(train, is.factor)]
+train_fac_o<-train[, !sapply(train, is.factor)]
+test_fac<-train_t[, sapply(train_t, is.factor)]
+test_fac_o<-train_t[, !sapply(train_t, is.factor)]
+# str(test$problem_id)
+# str(train$classe)
+# ncol(train_fac)
+# ncol(train_fac_o)
+
+M<-abs(cor(train_fac_o))
+diag(M)<-0
+rownames(which(M>.95, arr.ind = T))
+
+train_sub<-train[, rownames(which(M>.95, arr.ind = T))]
+train_sub<-cbind(train_sub, train_fac)
+nrow(train_0)
+nrow(train_sub)
+
+library(rpart)
+modfit<-train(classe~., method="rpart", data=train_sub)
+
+# plot(train[, 30], train[, 5])
+
+# names(train)
+prePC<-preProcess(train_fac_o, method="pca", pcaComp = 30)
+names(prePC)
+# trainPC<-predict(prePC, train_fac_o)
+# testPC<-predict(prePC, test_fac_o)
+library(caret)
+# modfit<-train(train_fac$classe~. , method="lda", data=train)
+modfit$finalModel
+
+a<-predict(modfit, newdata=testPC)
+
+length(a)
+nrow(train_t)
+head(testPC)
+
+confusionMatrix(train_t$classe, predict(modfit, newdata=testPC))
+ncol(train)
+
+```
+
+cross validation
+```{r}
+
+```
+
+
+
+out of sample error
+```{r}
+
+```

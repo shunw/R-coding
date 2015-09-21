@@ -32,4 +32,8 @@ p2 <- ggplot(dsumm, aes(x = wafer, y = tsd)) +
 
 # Use the gridExtra package to combine the two graphs
 library(gridExtra)
+<<<<<<< HEAD
 grid.arrange(p1, p2)
+=======
+grid.arrange(p1, p2)
+>>>>>>> 709b90347a5c152bbac2b435ae4e415fcfa36b5a
