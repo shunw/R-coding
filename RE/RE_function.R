@@ -106,3 +106,33 @@ failure$median<-(failure$i_cum-.3)/(total_engine+.4)
 #base plot
 plot(x=failure$Fail_Time_Midpoint, y=failure$median, type='b')
 
+
+# other test
+tt<- read.table("M3073GeyserData.txt", header = TRUE)
+Dorment<- tt$Dormant
+Dorment
+qqnorm(Dorment)
+qqline(Dorment, col=2)
+n<-length(Dorment)
+Fi<-(1:n-.5)/n
+
+SD<-sort(Dorment)
+Qi<--log(1-Fi)
+
+plot(SD, Qi) #this is for the exponential plot
+
+Eta <- log(-log(1-Fi))
+plot(Eta, log(SD), ylab="Log Dorment Quantiles", 
+     xlab="Theoretical Weibull Quantiles", main="Weibull P-P Plot")
+m<-(log(SD[37])-log(SD[4]))/(Eta[37]-Eta[4])
+b<-log(SD[4])-m*Eta[4];b
+abline(b, m, col=3)
+
+survreg(Surv(futime, fustat) ~ ecog.ps+rx, ovarian, dist='weibull', scale=1)
+Surv(ovarian$futime, ovarian$fustat)
+
+head(lung)
+nrow(lung)
+Surv(lung$time, lung$status)
+
+survreg(Surv(time, status) ~ ph.ecog + age + strata(sex), lung)
